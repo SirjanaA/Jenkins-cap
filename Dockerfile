@@ -2,7 +2,7 @@
 FROM public.ecr.aws/docker/library/node:slim
 
 # Copy application code.
-COPY ./cpapp/events-api/ /app/
+COPY ./ECR/cpapp/events-api/ /app/
 
 # Change the working directory
 WORKDIR /app
