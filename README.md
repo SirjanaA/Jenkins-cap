@@ -1,44 +1,50 @@
 # DevOps- Docker and Jenkins
 
-## Info
-This repo is based on Docker and Jenkins.
-Main server is build on ubuntu machine t2.medium in eruser102 account:
-- Instance : Jenkins-capstone
-- Region : us-east-1
-- Using existing keypair and security group so port 8080 is enabled.
-- Clone the repo via: git clone https://github.com/SirjanaA/Jenkins-cap.git 
-- This is a public repo with 2 branches: dev and main, all the changes were done via dev branch then merged into main branch.
-- Files are located inside Jenkins-cap and ECR -> cpapp 
+## Information
+This repository utilises Github, Docker and Jenkins.
+
+- All process steps were written in VScode, using the following configurations to connect with GitHub:
+    - git config --global user.name "John Doe"
+    - git config --global user.email "johndoe@example.com"
+- New SSH key pair was generated using: ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+- Changes were committed and pushed to the GitHub repository, which was then cloned onto the deployment server.
+- The main server is an Ubuntu t2.medium instance on the eruser102 AWS account:
+    - Instance Name: Jenkins-capstone
+    - Region: us-east-1
+- An existing key pair and security group were used, ensuring port 8080 is open.d.
+- The repository was cloned using: git clone https://github.com/SirjanaA/Jenkins-cap.git 
+- This is a public repository with two branches: 'dev' and 'main'. All changes were made on the 'dev' branch and then merged into 'main'.
+- Project files are located within the 'Jenkins-cap' directory, and application files are under 'Jenkins-cap/ECR/cpapp'.
 
 
-## Pre-requisite 
+## Prerequisites
 * Install Docker
 * Install git 
 * Install npm
 * Install java
 * Install jenkins
 * Install aws cli 
-- If connecting from the console then start Jenkins-capstone machine and check aws configure: accesskey and secretkey are already in place.
-- Deploy server is using eventsapp files, derived from https://github.com/msutton150/eventsappstart.git
+- If connecting from the console then start 'Jenkins-capstone' instance and verify AWS credentials using aws configure. The access key and secret key should already be configured.
+- Deploy server uses 'eventsapp' folders, derived from https://github.com/msutton150/eventsappstart.git
 
 
 ## Description
-- For Docker images, ECR repo is used instead of DockerHub. Example of image creation in DockerHub is also provided.
-- cd ~/Jenkins-cap/ECR/cpapp -> this directory has 2 files events-api and events-website. However, only events-api was used to create image via Jenkins.
-- Each files has Dockerfile and .dockerignore file.
+- Amazon ECR is used for Docker images instead of Docker Hub. An example of image creation for Docker Hub is also included.
+- The directory '~/Jenkins-cap/ECR/cpapp' contains 'events-api' and 'events-website' project files. Only 'events-api' was used to create an image via Jenkins.
+- Each files includes a 'Dockerfile' and '.dockerignore' file.
 
 
-## Commands for building Docker image in ECR repository
-- Used the exsiting ECR images to push the images.( mutable and encryption type: AES-256)
+## Building Docker Images for ECR
+- Existing ECR repositories were used for pushing images (mutable, AES-256 encryption).
 
-### For events-api
+### Building events-api Image
 - cd ~/Jenkins-cap/ECR/cpapp/events-api
 - docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) 441257995286.dkr.ecr.us-east-1.amazonaws.com/events-api
 - docker build -t events-api .
 - docker tag events-api:latest 441257995286.dkr.ecr.us-east-1.amazonaws.com/events-api:1.0
 - docker push 441257995286.dkr.ecr.us-east-1.amazonaws.com/events-api:1.0
 
-### For events-website
+### Building events-website Image
 - cd ~/Jenkins-cap/ECR/cpapp/events-website
 - docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) 441257995286.dkr.ecr.us-east-1.amazonaws.com/events-website
 - docker build -t events-website .
@@ -46,7 +52,7 @@ Main server is build on ubuntu machine t2.medium in eruser102 account:
 - docker push 441257995286.dkr.ecr.us-east-1.amazonaws.com/events-website:1.0
 
 
-## Image in Docker Hub (DockerHub wasn't used for Jenkins)
+## Building Docker Images for Docker Hub (Not Used with Jenkins)
 - Docker login -u srzu (username)
 - password key pair
 - docker build -t srzu/events-api:1.0 .
@@ -54,24 +60,25 @@ Main server is build on ubuntu machine t2.medium in eruser102 account:
 - docker build -t srzu/events-website:v2.0 .
 - docker push srzu/events-website:v2.0
 
-## Creating image using Jenkinsfile
-- Signed into Jenkins using the public ip address: http://publicip:8080 and created an admin account (username: admin, password: 26214).
-- Added accesskey and secretskey for Jenkins to connect with AWS account (eruser102).
-- Also, added github and Dockerhub tokens. 
-- Created a repo in ECR private repositories names: jenkins.
+## Building Images with Jenkins
+- Signed into Jenkins using the public ip address: http://publicip:8080 and created an admin account (credentials can be provided)
+- Configured AWS credentials (access key and secret key) for the eruser102 account within Jenkins.
+- Added GitHub and Docker Hub access tokens to Jenkins.
+- Created a private ECR repository named jenkins.
 
-## Running groovy script
-- For Jenkins to read the files another Dockerfile and .dockerignore was created under Jenkins-cap directory. 
-- Docker file path has been edited as: " COPY ./ECR/cpapp/events-api/ /app/ "
-- Made sure that docker was running by running docker ps -a
-- Run this command in EC2 : sudo usermod -aG docker $USER
-- Restart Jenkins and EC2 server
-- New pipeline script created from SCM (Git) -> branch */dev -> script path: Jenkinsfile
-- Build the pipeline and v1 image was created in jenkins repo in ECR.
-- Lastly, the changes were pushed to main branch.
+## Running groovy script (Jenkinsfile)
+- A new 'Dockerfile' and '.dockerignore' file were created in the root directory for Jenkins to access the application files.
+- The Dockerfile's COPY instruction was modified: " COPY ./ECR/cpapp/events-api/ /app/ "
+- Ensured Docker was running using docker ps -a.
+- Granted the current user Docker access on the EC2 instance: sudo usermod -aG docker $USER
+- Restart Jenkins and the EC2 instance.
+- Created a new Jenkins pipeline from SCM (Git): https://github.com/SirjanaA/Jenkins-cap.git 
+- branch */dev and script path: Jenkinsfile.
+- Build the pipeline, creating a 'v1' image in the jenkins ECR repository.
+- Finally, the changes were merged into the main branch.
 
-## Commands to stop Docker
-- docker images
-- docker ps -a
-- docker stop <ContainerID>
-- docker rm <ContainerID> --force
+## Stopping Docker Containers
+- docker images (List images)
+- docker ps -a (List all containers)
+- docker stop <ContainerID> (Stop a specific container)
+- docker rm <ContainerID> --force (Remove a specific container)
