@@ -72,7 +72,7 @@ This repository utilises Github, Docker and Jenkins.
 - Ensured Docker was running using docker ps -a.
 - Granted the current user Docker access on the EC2 instance: sudo usermod -aG docker $USER
 - Restarted Jenkins and the deployment server.
-- Inside Jenkinsfile, added credentialsId: 'my-api-key' (AWS credentials stored in Jenkins).
+- Inside Jenkinsfile, added credentialsId: 'my-api-key' (Github credentials stored in Jenkins).
 - Created a new Jenkins pipeline from SCM (Git): https://github.com/SirjanaA/Jenkins-cap.git 
 - Branch */dev -> script path: Jenkinsfile -> save.
 - 'Build Now' to build the pipeline, creating a 'v1' image in the jenkins ECR repository.
